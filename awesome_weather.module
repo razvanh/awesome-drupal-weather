@@ -14,3 +14,72 @@ function awesome_weather_help($path, $arg) {
 
   }
 }
+
+/**
+ * Implements hook_block_info().
+ *
+ * This hook declares the block provided by this module.
+ */
+function awesome_weather_block_info() {
+  $blocks['awesome_weather_block'] = array(
+    // The name of the block. Displayed to the site admin in the list of blocks.
+    'info' => t('Awesome weather'),
+    'status' => TRUE,
+    'region' => 'sidebar_first',
+  );
+  return $blocks;
+}
+
+/**
+ * Implements hook_block_configure().
+ *
+ * Provides configuration options for our block.
+ */
+function awesome_weather_block_configure($delta = '') {
+  $form = array();
+  // The $delta parameter tells us which block is being configured.
+  if ('awesome_weather_block' == $delta) {
+    $form['awesome_weather_zipcode'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Zipcode'),
+      '#size' => 5,
+      '#description' => t('The zipcode is used to get the weather information.'),
+      '#default_value' => variable_get('awesome_weather_zipcode', '52302'),
+    );
+  }
+  return $form;
+}
+
+/**
+ * Implements hook_block_save().
+ */
+function awesome_weather_block_save($delta = '', $edit = array()) {
+  // Make sure we are saving the right block.
+  if ('awesome_weather_block' == $delta) {
+    variable_set('awesome_weather_zipcode', $edit['awesome_weather_zipcode']);
+  }
+}
+
+/**
+ * Implements hook_block_view().
+ *
+ * Generate the content of our block.
+ */
+function awesome_weather_block_view($delta = '') {
+  if ('awesome_weather_block' == $delta) {
+    $block['subject'] = t('Your awesome weather information');
+    // Callback function that generates the content for the block.
+    $block['content'] = awesome_weather_block_contents();
+    return $block;
+  }
+}
+
+/**
+ * This function generates the content for our block.
+ */
+function awesome_weather_block_contents() {
+  $content = array(
+    '#markup' => t('We will display the weather info here.'),
+  );
+  return $content;
+}
