@@ -1,0 +1,4 @@
+name =  Awesome weather
+description = Displays weather information for logged in users
+core = 7.x
+package = Razvan
