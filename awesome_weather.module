@@ -1,2 +1,16 @@
 <?php
+/**
+ * @file
+ * Module file for awesome_weather.
+ */
 
+/**
+ * Implements hook_help().
+ */
+function awesome_weather_help($path, $arg) {
+  switch ($path) {
+    case "admin/help#awesome_weather":
+      return t('This module creates a block that displays weather information to logged in users.');
+
+  }
+}
