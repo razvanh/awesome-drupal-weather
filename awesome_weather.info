@@ -10,4 +10,5 @@ dependencies[] = drupal:block
 dependencies[] = drupal:system (>= 7.40)
 package = Razvan
 php = 5.6
-configure = admin/config/user-interface/awesome_weather
+configure = admin/settings/awesome_weather
+stylesheets[all][] = css/awesome-weather.css
