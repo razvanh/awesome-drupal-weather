@@ -16,6 +16,45 @@ function awesome_weather_help($path, $arg) {
 }
 
 /**
+ * Build the form for the module settings page.
+ */
+function awesome_weather_admin() {
+  $form = array();
+
+  $form['awesome_weather_apikey'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Open Weather API Key'),
+    '#default_value' => variable_get('awesome_weather_apikey'),
+    '#size' => 50,
+    '#maxlength' => 50,
+    '#description' => t("The Open Weather API Key."),
+    '#required' => TRUE,
+  );
+
+  return system_settings_form($form);
+}
+
+/**
+ * Implements hook_menu().
+ */
+function awesome_weather_menu() {
+
+  $items = array();
+
+  $items['admin/settings/awesome_weather'] = array(
+    'title' => 'Awesome Weather module settings',
+    'description' => 'Set up your api key.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('awesome_weather_admin'),
+    'access arguments' => array('administer awesome_weather settings'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  return $items;
+}
+
+
+/**
  * Implements hook_block_info().
  *
  * This hook declares the block provided by this module.
@@ -78,8 +117,37 @@ function awesome_weather_block_view($delta = '') {
  * This function generates the content for our block.
  */
 function awesome_weather_block_contents() {
+
+  $api_key = variable_get('awesome_weather_apikey');
+  $zipcode = variable_get('awesome_weather_zipcode', '52302');
+  if ($api_key) {
+    if (!cache_get('awesome_weather_cache') || cache_get('awesome_weather_cache')->data['zipcode'] != $zipcode) {
+      $options = array(
+        'method' => 'GET',
+        'timeout' => 5,
+      );
+      $result = drupal_http_request("https://api.openweathermap.org/data/2.5/weather?zip=$zipcode,us&appid=$api_key&units=imperial", $options);
+      $data = drupal_json_decode($result->data);
+      $data['zipcode'] = $zipcode;
+      cache_set('awesome_weather_cache', $data, 'cache', REQUEST_TIME + (3600));
+    }
+    else {
+      $data = cache_get('awesome_weather_cache')->data;
+      dpm($data);
+    }
+
+    $icon_name = $data['weather'][0]['icon'];
+    $icon_path = drupal_get_path('module', 'awesome_weather') . '/icons/' . $icon_name . '.svg';
+    $temperature = $data['main']['temp'];
+    $markup = "<div class='awesome-weather'><div class='awesome-weather__icon'><img src='$icon_path' /></div><div class='awesome-weather__temp'>$temperature F</div></div>";
+  }
+
+  else {
+    $markup = "<p>You need to set up the Open Weather API key on the module configuration page.</p>";
+  }
+
   $content = array(
-    '#markup' => t('We will display the weather info here.'),
+    '#markup' => $markup,
   );
   return $content;
 }
